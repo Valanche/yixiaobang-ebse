@@ -1,0 +1,15 @@
+spring:
+    datasource:
+        # the database just for dev
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://124.223.105.99:3306/WXTestDatabase?characterEncoding=utf8&useUnicode=true&allowMultiQueries=true&serverTimezone=GMT%2B8&useSSL=false
+        username: ENC(5tY+swdcyktUl1zOwP/LWw==)
+        password: ENC(VXU4yTq7vJzjwN5A+BZgcIgbVEkqxeVX)
+        hikari:
+            max-lifetime: 60000
+            maximum-pool-size: 200
+            connection-timeout: 30000
+            minimum-idle: 10
+            idle-timeout: 30000
+            auto-commit: true
+            connection-test-query: SELECT 1

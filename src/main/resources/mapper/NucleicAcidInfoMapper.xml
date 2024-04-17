@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.nucleic.NucleicAcidInfoMapper">
+
+	<resultMap id="acidMap" type="nucleicAcidInfoPO">
+		<id column="info_id" property="id" javaType="long" jdbcType="BIGINT"/>
+		<result column="user_id" property="userId" javaType="long"
+				jdbcType="BIGINT"/>
+		<result column="manager_id" property="managerId" javaType="long"
+				jdbcType="BIGINT"/>
+		<result column="info_deadline" property="deadLine"
+				javaType="java.util.Date"/>
+		<result column="info_title" property="title" javaType="string"/>
+		<result column="info_status" property="status"
+				javaType="string"
+				jdbcType="VARCHAR"/>
+		<result column="info_image_name" property="imageName"
+				javaType="string"/>
+		<result column="info_is_open_remind" property="isOpenRemind"
+				javaType="boolean"/>
+		<result column="info_comment" property="comment" javaType="string"/>
+	</resultMap>
+
+	<resultMap id="infoAndTestingMap" type="infoAssociatedTestingPO">
+		<id column="info_id" property="infoId" javaType="long"/>
+		<result column="testing_id" property="testingId" javaType="long"/>
+		<result column="info_deadline" property="infoDeadLine"
+				javaType="java.util.Date"/>
+		<result column="testing_start_time" property="testingStartTime"
+				javaType="java.util.Date"/>
+		<result column="testing_end_time" property="testingEndTime"
+				javaType="java.util.Date"/>
+		<result column="title" property="title" javaType="string"/>
+	</resultMap>
+
+	<select id="queryTestingByInfoId" resultMap="infoAndTestingMap"
+			parameterType="long">
+		SELECT info.`info_id`               AS info_id,
+			   info.`info_deadline`         AS info_deadline,
+			   info.`info_title`            AS title,
+			   testing.`testing_id`         AS testing_id,
+			   testing.`testing_start_time` AS testing_start_time,
+			   testing.`testing_end_time`   AS testing_end_time
+		FROM `nucleic_acid_info` info
+				 INNER JOIN `nucleic_acid_testing` testing
+							ON info.`info_title` = testing.`testing_title` AND
+							   info.`user_id` = testing.`user_id`
+		WHERE info.`info_id` = #{infoId}
+		  AND info.`user_id` = #{userId}
+	</select>
+
+	<select id="queryInfoByOpenId" resultMap="acidMap" parameterType="string">
+		SELECT info.*
+		FROM `nucleic_acid_info` info
+				 INNER JOIN `user` u ON u.`user_id` = info.`user_id`
+		WHERE u.`user_open_id` = #{openId}
+	</select>
+
+	<select id="queryInfoById" resultMap="acidMap" parameterType="long">
+		SELECT `info_id`,
+			   `user_id`,
+			   `info_deadline`,
+			   `info_title`,
+			   `info_status`,
+			   `info_is_open_remind`,
+			   `info_comment`
+		FROM `nucleic_acid_info`
+		WHERE `info_id` = #{id}
+	</select>
+
+	<select id="queryInfoByUserId" resultMap="acidMap">
+		SELECT `info_id`,
+			   `user_id`,
+			   `info_deadline`,
+			   `info_title`,
+			   `info_status`,
+			   `info_is_open_remind`,
+			   `info_comment`
+		FROM `nucleic_acid_info`
+		WHERE `user_id` = #{userId};
+	</select>
+
+	<select id="queryInfoCount" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM `nucleic_acid_info`
+		WHERE `user_id` = #{userId}
+		  AND `info_status` =
+			  #{finishStatus,typeHandler=com.weixin.njuteam.config.ValueEnumTypeHandler}
+	</select>
+
+	<select id="queryInfoByUserIdAndTitle" resultMap="acidMap">
+		SELECT *
+		FROM `nucleic_acid_info`
+		WHERE `user_id` = #{userId}
+		  AND `info_title` = #{oldTitle}
+	</select>
+
+	<insert id="insertInfo" parameterType="nucleicAcidInfoPO"
+			useGeneratedKeys="true" keyColumn="info_id" keyProperty="id">
+		INSERT INTO `nucleic_acid_info`(`user_id`, `manager_id`,
+										`info_deadline`,
+										`info_title`, `info_status`,
+										`info_image_name`,
+										`info_is_open_remind`, `info_comment`)
+		VALUES (#{userId}, IFNULL(#{managerId}, 0),
+				IFNULL(#{deadLine}, NOW()), #{title},
+				IFNULL(#{status}, '进行中'), IFNULL(#{imageName}, 'UNKNOWN'),
+				IFNULL(#{isOpenRemind}, FALSE), IFNULL(#{comment}, '无特殊理由'))
+	</insert>
+
+	<update id="updateInfo" parameterType="nucleicAcidInfoPO">
+		UPDATE `nucleic_acid_info`
+		<set>
+			<if test="userId != null">`user_id` = #{userId},</if>
+			<if test="managerId != null">`manager_id` = #{managerId},</if>
+			<if test="deadLine != null">`info_deadline` = #{deadLine},</if>
+			<if test="title != null">`info_title` = #{title},</if>
+			<if test="status != null">`info_status` = #{status},</if>
+			<if test="imageName != null">`info_image_name` = #{imageName},</if>
+			<if test="isOpenRemind != null">`info_is_open_remind` =
+				#{isOpenRemind},
+			</if>
+			<if test="comment != null">`info_comment` = #{comment}</if>
+		</set>
+		WHERE `info_id` = #{id}
+	</update>
+
+	<update id="updateComment">
+		UPDATE `nucleic_acid_info`
+		<set>
+			<if test="comment != null">`info_comment` = #{comment}</if>
+		</set>
+		WHERE `info_id` = #{infoId}
+	</update>
+
+	<update id="updateRecordFinish">
+		UPDATE `nucleic_acid_info`
+		<set>
+			<if test="status != null">`info_status`
+				=#{status,typeHandler=com.weixin.njuteam.config.ValueEnumTypeHandler}
+			</if>
+		</set>
+		WHERE `info_id` = #{id}
+	</update>
+
+	<update id="updateImageName">
+		UPDATE `nucleic_acid_info`
+		<set>
+			<if test="imageName != null">`info_image_name` = #{imageName}</if>
+		</set>
+		WHERE `info_id` = #{id}
+	</update>
+
+	<update id="openRemind">
+		UPDATE `nucleic_acid_info`
+		<set>
+			<if test="isOpenRemind != null">`info_is_open_remind` =
+				#{isOpenRemind}
+			</if>
+		</set>
+		WHERE `info_id` = #{infoId}
+	</update>
+
+	<update id="updateTestingByUserIdAndTitle" parameterType="updateInfoPO"
+			useGeneratedKeys="true" keyColumn="info_id" keyProperty="id">
+		UPDATE `nucleic_acid_info`
+		<set>
+			<if test="userId != null">`user_id` = #{userId},</if>
+			<if test="managerId != null">`manager_id` = #{managerId},</if>
+			<if test="deadLine != null">`info_deadline` = #{deadLine},</if>
+			<if test="title != null">`info_title` = #{title},</if>
+			<if test="status != null">`info_status` = #{status},</if>
+			<if test="imageName != null">`info_image_name` = #{imageName},</if>
+			<if test="isOpenRemind != null">`info_is_open_remind` =
+				#{isOpenRemind}
+			</if>
+		</set>
+		WHERE `user_id` = #{userId} AND `info_title` = #{oldTitle}
+	</update>
+
+	<delete id="deleteInfo" parameterType="long">
+		DELETE
+		FROM `nucleic_acid_info`
+		WHERE `info_id` = #{id}
+	</delete>
+
+	<delete id="deleteInfoByUserIdAndTitle">
+		DELETE
+		FROM `nucleic_acid_info`
+		WHERE `user_id` = #{userId}
+		  AND `info_title` = #{title}
+	</delete>
+
+</mapper>

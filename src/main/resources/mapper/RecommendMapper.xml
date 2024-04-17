@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.help.RecommendMapper">
+
+	<resultMap id="similarityWordMap" type="similarityWordPO">
+		<id column="similarity_id" property="id" javaType="long"/>
+		<result column="similarity_score" property="score" javaType="double"/>
+		<result column="similarity_word_one" property="wordOne"
+				javaType="string"/>
+		<result column="similarity_word_two" property="wordTwo"
+				javaType="string"/>
+	</resultMap>
+
+	<resultMap id="similaritySentenceMap" type="similaritySentencePO">
+		<id column="similarity_id" property="id" javaType="long"/>
+		<result column="similarity_score" property="score" javaType="double"/>
+		<result column="similarity_sentence_one" property="sentenceOne"
+				javaType="string"/>
+		<result column="similarity_sentence_two" property="sentenceTwo"
+				javaType="string"/>
+	</resultMap>
+
+	<select id="queryWordSimilarity" resultMap="similarityWordMap">
+		SELECT *
+		FROM `similarity_word`
+		WHERE (`similarity_word_one` = #{wordOne} AND
+			   `similarity_word_two` = #{wordTwo})
+		   OR (`similarity_word_one` = #{wordTwo} AND
+			   `similarity_word_two` = #{wordOne})
+	</select>
+
+	<select id="querySentenceSimilarity" resultMap="similaritySentenceMap">
+		SELECT *
+		FROM `similarity_sentence`
+		WHERE (`similarity_sentence_one` = #{sentenceOne} AND
+			   `similarity_sentence_two` = #{sentenceTwo})
+		   OR (`similarity_sentence_one` = #{sentenceTwo} AND
+			   `similarity_sentence_two` = #{sentenceOne})
+	</select>
+
+	<insert id="insertWordSimilarity" parameterType="similarityWordPO"
+			useGeneratedKeys="true" keyColumn="similarity_id" keyProperty="id">
+		INSERT INTO `similarity_word`(`similarity_score`, `similarity_word_one`,
+									  `similarity_word_two`)
+		VALUES (IFNULL(#{score}, 0), #{wordOne}, #{wordTwo})
+	</insert>
+
+	<insert id="insertSentenceSimilarity" parameterType="similaritySentencePO"
+			useGeneratedKeys="true" keyColumn="similarity_id" keyProperty="id">
+		INSERT INTO `similarity_sentence`(`similarity_score`,
+										  `similarity_sentence_one`,
+										  `similarity_sentence_two`)
+		VALUES (IFNULL(#{score}, 0), #{sentenceOne}, #{sentenceTwo})
+	</insert>
+
+	<delete id="deleteSentenceSimilarity">
+		DELETE
+		FROM `similarity_sentence`
+		WHERE `similarity_id` = #{similarityId}
+	</delete>
+
+</mapper>

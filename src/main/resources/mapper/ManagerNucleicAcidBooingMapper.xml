@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.weixin.njuteam.dao.manager.ManagerNucleicAcidBookingMapper">
+
+	<resultMap id="bookingMap" type="managerBookingPo">
+		<id column="booking_id" property="id" javaType="long"/>
+		<result column="manager_id" property="managerId" javaType="long"/>
+		<result column="booking_finish_status" property="finishStatus"
+				javaType="string"/>
+		<result column="booking_title" property="title" javaType="string"/>
+		<result column="booking_deadline" property="deadLine"
+				javaType="java.util.Date"/>
+	</resultMap>
+
+	<select id="queryBookingById" parameterType="long" resultMap="bookingMap">
+		SELECT *
+		FROM `manager_nucleic_acid_booking`
+		WHERE `booking_id` = #{id}
+	</select>
+
+	<select id="queryManagerBookingList" parameterType="long"
+			resultMap="bookingMap">
+		SELECT `booking_id`,
+			   `booking_title`,
+			   `booking_deadline`,
+			   `booking_finish_status`
+		FROM `manager_nucleic_acid_booking`
+		WHERE `manager_id` = #{managerId}
+	</select>
+
+	<select id="queryBookingInfoByManagerIdAndTitle" resultMap="bookingMap">
+		SELECT *
+		FROM `manager_nucleic_acid_booking`
+		WHERE `manager_id` = #{managerId}
+		  AND `booking_title` = #{title}
+	</select>
+
+	<insert id="insertBooking" parameterType="managerBookingPo"
+			useGeneratedKeys="true" keyColumn="booking_id" keyProperty="id">
+		INSERT INTO `manager_nucleic_acid_booking`(`manager_id`,
+												   `booking_finish_status`,
+												   `booking_title`,
+												   `booking_deadline`)
+		VALUES (IFNULL(#{managerId}, 0), IFNULL(#{finishStatus}, '进行中'),
+				IFNULL(#{title}, '未指定'),
+				IFNULL(#{deadLine}, NOW()))
+	</insert>
+
+	<update id="updateBooking" parameterType="managerBookingPo">
+		UPDATE `manager_nucleic_acid_booking`
+		<set>
+			<if test="managerId != null">`manager_id` = #{managerId},</if>
+			<if test="finishStatus != null">`booking_finish_status` =
+				#{finishStatus},
+			</if>
+			<if test="title != null">`booking_title` = #{title},</if>
+			<if test="deadLine != null">`booking_deadline` = #{deadLine}</if>
+		</set>
+		WHERE `booking_id` = #{id}
+	</update>
+
+	<update id="updateBookingFinish">
+		UPDATE `manager_nucleic_acid_booking`
+		<set>
+			<if test="finishStatus != null">`booking_finish_status` =
+				#{finishStatus,typeHandler=com.weixin.njuteam.config.ValueEnumTypeHandler}
+			</if>
+		</set>
+		WHERE `booking_id` = #{bookingId}
+	</update>
+
+	<delete id="deleteBookingById" parameterType="long">
+		DELETE
+		FROM `manager_nucleic_acid_booking`
+		WHERE `booking_id` = #{id}
+	</delete>
+
+	<delete id="deleteAllBooking" parameterType="long">
+		DELETE
+		FROM `manager_nucleic_acid_booking`
+		WHERE `manager_id` = #{managerId}
+	</delete>
+</mapper>

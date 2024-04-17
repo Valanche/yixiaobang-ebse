@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.help.ClickHistoryMapper">
+
+	<resultMap id="helpClickHistoryMap" type="helpClickHistoryPO">
+		<id column="click_id" property="id" javaType="long"/>
+		<result column="user_id" property="userId" javaType="long"/>
+		<result column="click_start_time" property="clickStartTime"
+				javaType="java.util.Date"/>
+		<result column="click_end_time" property="clickEndTime"
+				javaType="java.util.Date"/>
+		<association property="helpInfo" resultMap="helpInfoMap"/>
+	</resultMap>
+
+	<resultMap id="helpInfoMap" type="helpInfoPO">
+		<id column="help_id" property="id" javaType="long"/>
+		<result column="help_user_id" property="userId" javaType="long"/>
+		<result column="help_type" property="helpType" javaType="string"
+				jdbcType="VARCHAR"/>
+		<result column="help_publish_date" property="publishDate"
+				javaType="java.util.Date"/>
+		<result column="help_name" property="name" javaType="string"/>
+		<result column="help_deadline" property="deadLine"
+				javaType="java.util.Date"/>
+		<result column="help_tag" property="tag" javaType="string"/>
+		<result column="help_comment" property="comment" javaType="string"/>
+		<result column="help_urgency" property="urgency" javaType="int"/>
+		<result column="help_finish_status" property="finishStatus"
+				javaType="string" jdbcType="VARCHAR"/>
+		<collection property="urlList" ofType="helpImage" column="help_id">
+			<id column="image_id" property="id" javaType="long"/>
+			<result column="image_help_id" property="helpId" javaType="long"/>
+			<result column="image_url" property="imageUrl" javaType="string"/>
+		</collection>
+	</resultMap>
+
+	<resultMap id="seekHelpClickHistoryMap" type="seekHelpClickHistoryPO">
+		<id column="click_id" property="id" javaType="long"/>
+		<result column="user_id" property="userId" javaType="long"/>
+		<result column="click_start_time" property="clickStartTime"
+				javaType="java.util.Date"/>
+		<result column="click_end_time" property="clickEndTime"
+				javaType="java.util.Date"/>
+		<association property="seekHelpInfo" resultMap="seekHelpInfoMap"/>
+	</resultMap>
+
+	<resultMap id="seekHelpInfoMap" type="seekHelpInfoPO">
+		<id column="seek_help_id" property="id" javaType="long"/>
+		<result column="seek_user_id" property="userId" javaType="long"/>
+		<result column="seek_help_type" property="seekHelpType"
+				javaType="string" jdbcType="VARCHAR"/>
+		<result column="seek_help_publish_date" property="publishDate"
+				javaType="java.util.Date"/>
+		<result column="seek_help_name" property="name" javaType="string"/>
+		<result column="seek_help_deadline" property="deadLine"
+				javaType="java.util.Date"/>
+		<result column="seek_help_comment" property="comment"
+				javaType="string"/>
+		<result column="seek_help_tag" property="tag" javaType="string"/>
+		<result column="seek_help_urgency" property="urgency" javaType="int"/>
+		<result column="seek_help_finish_status" property="finishStatus"
+				javaType="string" jdbcType="VARCHAR"/>
+		<collection property="urlList" ofType="seekHelpImage" column="help_id">
+			<id column="image_id" property="id" javaType="long"/>
+			<result column="image_seek_help_id" property="seekHelpId"
+					javaType="long"/>
+			<result column="image_url" property="imageUrl" javaType="string"/>
+		</collection>
+	</resultMap>
+
+	<select id="queryUserClickHelpHistory" parameterType="long"
+			resultMap="helpClickHistoryMap">
+		SELECT click.`click_id`,
+			   click.`user_id`,
+			   click.`click_start_time`,
+			   click.`click_end_time`,
+			   info.`help_id`,
+			   info.`user_id`    AS help_user_id,
+			   info.`help_type`,
+			   info.`help_publish_date`,
+			   info.`help_name`,
+			   info.`help_tag`,
+			   info.`help_comment`,
+			   info.`help_urgency`,
+			   info.`help_finish_status`,
+			   image.`image_id`  AS image_id,
+			   image.`help_id`   AS `image_help_id`,
+			   image.`image_url` AS `image_url`
+		FROM `help_info_click` click
+				 LEFT JOIN `help_info` info ON click.`help_id` = info.`help_id`
+				 LEFT JOIN `help_image` image
+						   ON info.`help_id` = image.`help_id`
+		WHERE click.`user_id` = #{userId}
+	</select>
+
+	<select id="queryUserClickSeekHelpHistory" parameterType="long"
+			resultMap="seekHelpClickHistoryMap">
+		SELECT click.`click_id`,
+			   click.`user_id`,
+			   click.`click_start_time`,
+			   click.`click_end_time`,
+			   info.`seek_help_id`,
+			   info.`user_id`       AS seek_user_id,
+			   info.`seek_help_type`,
+			   info.`seek_help_publish_date`,
+			   info.`seek_help_name`,
+			   info.`seek_help_tag`,
+			   info.`seek_help_comment`,
+			   info.`seek_help_urgency`,
+			   info.`seek_help_finish_status`,
+			   image.`image_id`     AS `image_id`,
+			   image.`seek_help_id` AS `image_seek_help_id`,
+			   image.`image_url`    AS `image_url`
+		FROM `seek_help_info_click` click
+				 LEFT JOIN `seek_help_info` info
+						   ON click.`seek_help_id` = info.`seek_help_id`
+				 LEFT JOIN `seek_help_image` image
+						   ON info.`seek_help_id` = image.`seek_help_id`
+		WHERE click.`user_id` = #{userId}
+	</select>
+
+	<select id="queryClickHelpHistoryById" parameterType="long"
+			resultMap="helpClickHistoryMap">
+		SELECT click.`click_id`,
+			   click.`user_id`,
+			   click.`click_start_time`,
+			   click.`click_end_time`,
+			   info.`help_id`,
+			   info.`user_id`    AS help_user_id,
+			   info.`help_type`,
+			   info.`help_publish_date`,
+			   info.`help_name`,
+			   info.`help_tag`,
+			   info.`help_comment`,
+			   info.`help_urgency`,
+			   info.`help_finish_status`,
+			   image.`image_id`  AS image_id,
+			   image.`help_id`   AS `image_help_id`,
+			   image.`image_url` AS `image_url`
+		FROM `help_info_click` click
+				 LEFT JOIN `help_info` info ON click.`help_id` = info.`help_id`
+				 LEFT JOIN `help_image` image
+						   ON info.`help_id` = image.`help_id`
+		WHERE click.`click_id` = #{clickId}
+	</select>
+
+	<select id="queryClickSeekHelpHistoryById" parameterType="long"
+			resultMap="seekHelpClickHistoryMap">
+		SELECT click.`click_id`,
+			   click.`user_id`,
+			   click.`click_start_time`,
+			   click.`click_end_time`,
+			   info.`seek_help_id`,
+			   info.`user_id`       AS seek_user_id,
+			   info.`seek_help_type`,
+			   info.`seek_help_publish_date`,
+			   info.`seek_help_name`,
+			   info.`seek_help_tag`,
+			   info.`seek_help_comment`,
+			   info.`seek_help_urgency`,
+			   info.`seek_help_finish_status`,
+			   image.`image_id`     AS image_id,
+			   image.`seek_help_id` AS `image_seek_help_id`,
+			   image.`image_url`    AS `image_url`
+		FROM `seek_help_info_click` click
+				 LEFT JOIN `seek_help_info` info
+						   ON click.`seek_help_id` = info.`seek_help_id`
+				 LEFT JOIN `seek_help_image` image
+						   ON info.`seek_help_id` = image.`seek_help_id`
+		WHERE click.`click_id` = #{clickId}
+	</select>
+
+	<delete id="deleteClickHelpHistoryById" parameterType="long">
+		DELETE
+		FROM `help_info_click`
+		WHERE `click_id` = #{clickId}
+	</delete>
+
+	<delete id="deleteClickSeekHelpHistoryById" parameterType="long">
+		DELETE
+		FROM `seek_help_info_click`
+		WHERE `click_id` = #{clickId}
+	</delete>
+
+</mapper>

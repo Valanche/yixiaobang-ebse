@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.help.SeekHelpInfoMapper">
+
+	<resultMap id="seekMap" type="seekHelpInfoPO">
+		<id column="seek_help_id" property="id" javaType="long"/>
+		<result column="user_id" property="userId" javaType="long"/>
+		<result column="seek_help_type" property="seekHelpType"
+				javaType="string" jdbcType="VARCHAR"/>
+		<result column="seek_help_publish_date" property="publishDate"
+				javaType="java.util.Date"/>
+		<result column="seek_help_name" property="name" javaType="string"/>
+		<result column="seek_help_deadline" property="deadLine"
+				javaType="java.util.Date"/>
+		<result column="seek_help_comment" property="comment"
+				javaType="string"/>
+		<result column="seek_help_tag" property="tag" javaType="string"/>
+		<result column="seek_help_urgency" property="urgency" javaType="int"/>
+		<result column="seek_help_finish_status" property="finishStatus"
+				javaType="string" jdbcType="VARCHAR"/>
+		<collection property="urlList" ofType="seekHelpImage" column="help_id">
+			<id column="image_id" property="id" javaType="long"/>
+			<result column="image_seek_help_id" property="seekHelpId"
+					javaType="long"/>
+			<result column="image_url" property="imageUrl" javaType="string"/>
+		</collection>
+	</resultMap>
+
+	<resultMap id="historyMap" type="historyPO">
+		<id column="history_id" property="id" javaType="long"/>
+		<result column="user_id" property="userId" javaType="long"/>
+		<result column="history_search_time" property="searchTime"
+				javaType="java.util.Date"/>
+		<result column="history_keyword" property="keyword" javaType="string"/>
+	</resultMap>
+
+	<resultMap id="imageMap" type="seekHelpImage">
+		<id column="image_id" property="id" javaType="long"/>
+		<result column="seek_help_id" property="seekHelpId" javaType="long"/>
+		<result column="image_url" property="imageUrl" javaType="string"/>
+	</resultMap>
+
+	<resultMap id="clickMap" type="seekHelpInfoClickPO">
+		<id column="click_id" property="id" javaType="long"/>
+		<result column="user_id" property="userId" javaType="long"/>
+		<result column="seek_help_id" property="seekHelpId" javaType="long"/>
+		<result column="click_start_time" property="startTime"
+				javaType="java.util.Date"/>
+		<result column="click_end_time" property="endTime"
+				javaType="java.util.Date"/>
+	</resultMap>
+
+	<select id="querySeekInfoById" resultMap="seekMap">
+		SELECT info.*,
+			   image.`image_id`     AS image_id,
+			   image.`seek_help_id` AS `image_seek_help_id`,
+			   image.`image_url`    AS `image_url`
+		FROM `seek_help_info` info
+				 LEFT JOIN `seek_help_image` image
+						   ON info.`seek_help_id` = image.`seek_help_id`
+		WHERE info.`seek_help_id` = #{id}
+		ORDER BY info.`seek_help_publish_date` DESC
+	</select>
+
+	<select id="querySeekInfoByUserId" resultMap="seekMap">
+		SELECT info.*,
+			   image.`image_id`     AS image_id,
+			   image.`seek_help_id` AS `image_seek_help_id`,
+			   image.`image_url`    AS `image_url`
+		FROM `seek_help_info` info
+				 LEFT JOIN `seek_help_image` image
+						   ON info.`seek_help_id` = image.`seek_help_id`
+		WHERE info.`user_id` = #{userId}
+		ORDER BY info.`seek_help_publish_date` DESC
+	</select>
+
+	<select id="querySeekInfoByKeyword" resultMap="seekMap">
+		SELECT info.*,
+			   image.`image_id`     AS image_id,
+			   image.`seek_help_id` AS `image_seek_help_id`,
+			   image.`image_url`    AS `image_url`
+		FROM `seek_help_info` info
+				 LEFT JOIN `seek_help_image` image
+						   ON info.`seek_help_id` = image.`seek_help_id`
+		WHERE (info.`seek_help_name` LIKE CONCAT('%', #{keyword}, '%')
+			OR info.`seek_help_comment` LIKE CONCAT('%', #{keyword}, '%'))
+		  AND `seek_help_finish_status` = '进行中'
+		ORDER BY info.`seek_help_publish_date` DESC
+	</select>
+
+	<select id="querySearchHistory" parameterType="long" resultMap="historyMap">
+		SELECT *
+		FROM `seek_help_search_history`
+		WHERE `user_id` = #{userId}
+		ORDER BY `history_search_time` DESC
+		<if test="size != -1">LIMIT 0, #{size}</if>
+	</select>
+
+	<select id="querySeekInfoInProgress" resultMap="seekMap">
+		SELECT info.*,
+			   image.`image_id`     AS image_id,
+			   image.`seek_help_id` AS `image_seek_help_id`,
+			   image.`image_url`    AS `image_url`
+		FROM `seek_help_info` info
+				 LEFT JOIN `seek_help_image` image
+						   ON info.`seek_help_id` = image.`seek_help_id`
+		WHERE `seek_help_finish_status` = '进行中'
+		ORDER BY info.`seek_help_publish_date` DESC
+	</select>
+
+	<select id="querySeekHelpImage" resultMap="imageMap">
+		SELECT *
+		FROM `seek_help_image`
+		WHERE `image_id` = #{imageId}
+	</select>
+
+	<select id="queryClick" resultMap="clickMap">
+		SELECT *
+		FROM `seek_help_info_click`
+		WHERE `user_id` = #{userId}
+		  AND `seek_help_id` = #{seekHelpId}
+	</select>
+
+	<insert id="insertSeekInfo" parameterType="seekHelpInfoPO"
+			useGeneratedKeys="true" keyColumn="seek_help_id" keyProperty="id">
+		INSERT INTO `seek_help_info`(`user_id`, `seek_help_type`,
+									 `seek_help_publish_date`,
+									 `seek_help_name`, `seek_help_deadline`,
+									 `seek_help_tag`,
+									 `seek_help_comment`, `seek_help_urgency`,
+									 `seek_help_finish_status`)
+		VALUES (#{userId}, IFNULL(#{seekHelpType}, '求帮跑腿'),
+				IFNULL(#{publishDate}, NOW()), #{name},
+				IFNULL(#{deadLine}, NOW()), #{tag},
+				IFNULL(#{comment}, '无备注'),
+				IFNULL(#{urgency}, 3), IFNULL(#{finishStatus}, '进行中'))
+	</insert>
+
+	<insert id="insertSeekImage" parameterType="seekHelpImage"
+			useGeneratedKeys="true" keyProperty="id" keyColumn="image_id">
+		INSERT INTO `seek_help_image`(`seek_help_id`, `image_url`)
+		VALUES (#{seekHelpId}, #{imageUrl})
+	</insert>
+
+	<insert id="insertSearchHistory" parameterType="historyPO"
+			useGeneratedKeys="true" keyColumn="history_id" keyProperty="id">
+		INSERT INTO `seek_help_search_history`(`user_id`, `history_keyword`,
+											   `history_search_time`)
+		VALUES (#{userId}, #{keyword}, IFNULL(#{searchTime}, NOW()))
+	</insert>
+
+	<insert id="insertClick" parameterType="seekHelpInfoPO"
+			useGeneratedKeys="true" keyColumn="click_id" keyProperty="id">
+		INSERT INTO `seek_help_info_click`(`user_id`, `seek_help_id`,
+										   `click_start_time`)
+		VALUES (#{userId}, #{seekHelpId}, IFNULL(#{startTime}, NOW()))
+	</insert>
+
+	<update id="updateSeekInfo" parameterType="seekHelpInfoPO">
+		UPDATE `seek_help_info`
+		<set>
+			<if test="userId != null">`user_id` = #{userId},</if>
+			<if test="seekHelpType != null">`seek_help_type` =
+				#{seekHelpType},
+			</if>
+			<if test="publishDate != null">`seek_help_publish_date` =
+				#{publishDate},
+			</if>
+			<if test="name != null">`seek_help_name` = #{name},</if>
+			<if test="deadLine != null">`seek_help_deadline` = #{deadLine},</if>
+			<if test="tag != null">`seek_help_tag` = #{tag},</if>
+			<if test="urgency != null and urgency >= 0">`seek_help_urgency` =
+				#{urgency},
+			</if>
+			<if test="finishStatus != null">`seek_help_finish_status` =
+				#{finishStatus}
+			</if>
+		</set>
+		WHERE `seek_help_id` = #{id}
+	</update>
+
+	<update id="updateSeekImage" useGeneratedKeys="true" keyProperty="id"
+			keyColumn="image_id">
+		UPDATE `seek_help_image`
+		<set>
+			<if test="seekHelpId != null">`seek_help_id` = #{helpId},</if>
+			<if test="imageUrl != null">`image_url` = #{imageUrl}</if>
+		</set>
+		WHERE `image_id` = #{imageId}
+	</update>
+
+	<update id="updateFinishStatus">
+		UPDATE `seek_help_info`
+		<set>
+			<if test="finishStatus != null">`seek_help_finish_status` =
+				#{finishStatus, typeHandler = com.weixin.njuteam.config.ValueEnumTypeHandler}
+			</if>
+		</set>
+		WHERE `seek_help_id` = #{seekId}
+	</update>
+
+	<update id="updateClickEndTime">
+		UPDATE `seek_help_info_click`
+		<set>
+			`click_end_time` = NOW()
+		</set>
+		WHERE `click_id` = #{clickId}
+	</update>
+
+	<update id="updateClick" parameterType="long">
+		UPDATE `seek_help_info_click`
+		SET `click_start_time` = NOW(),
+			`click_end_time`   = NULL
+		WHERE `click_id` = #{clickId}
+	</update>
+
+	<delete id="deleteSeekInfo" parameterType="long">
+		DELETE
+		FROM `seek_help_info`
+		WHERE `seek_help_id` = #{id}
+	</delete>
+
+	<delete id="deleteAllImage" parameterType="long">
+		DELETE
+		FROM `seek_help_image`
+		WHERE `seek_help_id` = #{seekHelpId}
+	</delete>
+
+	<delete id="deleteImage">
+		DELETE
+		FROM `seek_help_image`
+		WHERE `image_id` = #{imageId}
+	</delete>
+
+	<delete id="deleteSearchHistory">
+		DELETE
+		FROM `seek_help_search_history`
+		WHERE `history_id` = #{historyId}
+	</delete>
+
+	<delete id="deleteAllSearchHistory" parameterType="long">
+		DELETE
+		FROM `seek_help_search_history`
+		WHERE `user_id` = #{userId}
+	</delete>
+
+</mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.weixin.njuteam.dao.manager.ManagerNucleicAcidTestingMapper">
+
+	<resultMap id="testingMap" type="managerTestingPo">
+		<id column="testing_id" property="id" javaType="long"/>
+		<result column="manager_id" property="managerId" javaType="long"/>
+		<result column="testing_finish_status" property="finishStatus"
+				javaType="string"/>
+		<result column="testing_title" property="title" javaType="string"/>
+		<result column="testing_require" property="require" javaType="string"/>
+		<result column="testing_place" property="place" javaType="string"/>
+		<result column="testing_start_time" property="startTime"
+				javaType="java.util.Date"/>
+		<result column="testing_end_time" property="endTime"
+				javaType="java.util.Date"/>
+	</resultMap>
+
+	<select id="queryTestingById" resultMap="testingMap" parameterType="long">
+		SELECT *
+		FROM `manager_nucleic_acid_testing`
+		WHERE `testing_id` = #{id}
+	</select>
+
+	<select id="queryManagerTestingList" resultMap="testingMap"
+			parameterType="long">
+		SELECT *
+		FROM `manager_nucleic_acid_testing`
+		WHERE `manager_id` = #{managerId}
+	</select>
+
+	<select id="queryTestingByManagerIdAndTitle" resultMap="testingMap">
+		SELECT *
+		FROM `manager_nucleic_acid_testing`
+		WHERE `manager_id` = #{managerId}
+		  AND `testing_title` = #{title}
+	</select>
+
+	<insert id="insertTestingInfo" parameterType="managerTestingPo"
+			useGeneratedKeys="true" keyColumn="testing_id" keyProperty="id">
+		INSERT INTO `manager_nucleic_acid_testing`(`manager_id`,
+												   `testing_finish_status`,
+												   `testing_title`,
+												   `testing_require`,
+												   `testing_place`,
+												   `testing_start_time`,
+												   `testing_end_time`)
+		VALUES (IFNULL(#{managerId}, 0), IFNULL(#{finishStatus}, '进行中'),
+				IFNULL(#{title}, '未指定'),
+				IFNULL(#{require}, '无要求'), IFNULL(#{place}, '未指定'),
+				IFNULL(#{startTime}, NOW()), IFNULL(#{endTime}, NOW()))
+	</insert>
+
+	<update id="updateTestingInfo" parameterType="managerTestingPo">
+		UPDATE `manager_nucleic_acid_testing`
+		<set>
+			<if test="managerId != null">`manager_id` = #{managerId},</if>
+			<if test="finishStatus != null">`testing_finish_status` =
+				#{finishStatus},
+			</if>
+			<if test="title != null">`testing_title` = #{title},</if>
+			<if test="require != null">`testing_require` = #{require},</if>
+			<if test="place != null">`testing_place` = #{place},</if>
+			<if test="startTime != null">`testing_start_time` = #{startTime},
+			</if>
+			<if test="endTime != null">`testing_end_time` = #{endTime}</if>
+		</set>
+		WHERE `testing_id` = #{id}
+	</update>
+
+	<update id="updateTestingFinish">
+		UPDATE `manager_nucleic_acid_testing`
+		<set>
+			<if test="finishStatus != null">`testing_finish_status` =
+				#{finishStatus,typeHandler=com.weixin.njuteam.config.ValueEnumTypeHandler}
+			</if>
+		</set>
+		WHERE `testing_id` = #{testingId}
+	</update>
+
+	<delete id="deleteTestingInfoById" parameterType="long">
+		DELETE
+		FROM `manager_nucleic_acid_testing`
+		WHERE `testing_id` = #{id}
+	</delete>
+
+	<delete id="deleteAllTestingInfo" parameterType="long">
+		DELETE
+		FROM `manager_nucleic_acid_testing`
+		WHERE `manager_id` = #{managerId}
+	</delete>
+
+</mapper>

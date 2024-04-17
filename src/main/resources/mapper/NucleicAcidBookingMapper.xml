@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.nucleic.NucleicAcidBookingMapper">
+	<resultMap id="bookingMap" type="nucleicAcidBookingPO">
+		<id column="booking_id" property="id" javaType="long"/>
+		<result column="user_id" property="userId" javaType="long"/>
+		<result column="manager_id" property="managerId" javaType="long"/>
+		<result column="booking_title" property="title" javaType="string"/>
+		<result column="booking_deadline" property="deadLine"
+				javaType="java.util.Date"/>
+		<result column="booking_is_open_remind" property="isOpenRemind"
+				javaType="boolean"/>
+		<result column="booking_finish_status" property="finishStatus"
+				javaType="string" jdbcType="VARCHAR"/>
+	</resultMap>
+
+	<select id="queryBookingById" resultMap="bookingMap" parameterType="long">
+		SELECT `booking_id`,
+			   `user_id`,
+			   `booking_title`,
+			   `booking_deadline`,
+			   `booking_is_open_remind`,
+			   `booking_finish_status`
+		FROM `nucleic_acid_booking`
+		WHERE `booking_id` = #{id}
+	</select>
+
+	<select id="queryBookingByUserId" resultMap="bookingMap"
+			parameterType="long">
+		SELECT `booking_id`,
+			   `user_id`,
+			   `booking_title`,
+			   `booking_deadline`,
+			   `booking_is_open_remind`,
+			   `booking_finish_status`
+		FROM `nucleic_acid_booking`
+		WHERE `user_id` = #{userId}
+	</select>
+
+	<select id="queryBookingCount" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM `nucleic_acid_booking`
+		WHERE `user_id` = #{userId}
+		  AND `booking_finish_status` =
+			  #{finishStatus,typeHandler=com.weixin.njuteam.config.ValueEnumTypeHandler}
+	</select>
+	<select id="queryBookingByUserIdAndTitle" resultMap="bookingMap">
+		SELECT *
+		FROM `nucleic_acid_booking`
+		WHERE `user_id` = #{userId}
+		  AND `booking_title` = #{oldTitle}
+	</select>
+
+	<insert id="insertBooking" parameterType="nucleicAcidBookingPO"
+			useGeneratedKeys="true" keyColumn="booking_id" keyProperty="id">
+		INSERT INTO `nucleic_acid_booking`(`user_id`, `manager_id`,
+										   `booking_title`, `booking_deadline`,
+										   `booking_is_open_remind`,
+										   `booking_finish_status`)
+		VALUES (#{userId}, IFNULL(#{managerId}, 0), #{title},
+				IFNULL(#{deadLine}, NOW()),
+				IFNULL(#{isOpenRemind}, FALSE),
+				IFNULL(#{finishStatus}, '进行中'))
+	</insert>
+
+	<update id="updateBooking" parameterType="nucleicAcidBookingPO"
+			useGeneratedKeys="true" keyColumn="booking_id" keyProperty="id">
+		UPDATE `nucleic_acid_booking`
+		<set>
+			<if test="userId != null">`user_id` = #{userId},</if>
+			<if test="managerId != null">`manager_id` = #{managerId},</if>
+			<if test="title != null">`booking_title` = #{title},</if>
+			<if test="deadLine != null">`booking_deadline` = #{deadLine},</if>
+			<if test="isOpenRemind != null">`booking_is_open_remind` =
+				#{isOpenRemind},
+			</if>
+			<if test="finishStatus != null">`booking_finish_status` =
+				#{finishStatus}
+			</if>
+		</set>
+		WHERE `booking_id` = #{id}
+	</update>
+
+	<update id="updateFinish">
+		UPDATE `nucleic_acid_booking`
+		<set>
+			<if test="finishStatus != null">`booking_finish_status` =
+				#{finishStatus,typeHandler=com.weixin.njuteam.config.ValueEnumTypeHandler}
+			</if>
+		</set>
+		WHERE `booking_id` = #{bookingId}
+	</update>
+
+	<update id="openRemind">
+		UPDATE `nucleic_acid_booking`
+		<set>
+			<if test="isOpenRemind != null">`booking_is_open_remind` =
+				#{isOpenRemind}
+			</if>
+		</set>
+		WHERE `booking_id` = #{bookingId}
+	</update>
+
+	<update id="updateBookingByUserIdAndTitle" useGeneratedKeys="true"
+			keyProperty="id" keyColumn="booking_id">
+		UPDATE `nucleic_acid_booking`
+		<set>
+			<if test="userId != null">`user_id` = #{userId},</if>
+			<if test="managerId != null">`manager_id` = #{managerId},</if>
+			<if test="title != null">`booking_title` = #{title},</if>
+			<if test="deadLine != null">`booking_deadline` = #{deadLine},</if>
+			<if test="isOpenRemind != null">`booking_is_open_remind` =
+				#{isOpenRemind},
+			</if>
+			<if test="finishStatus != null">`booking_finish_status` =
+				#{finishStatus}
+			</if>
+		</set>
+		WHERE `user_id` = #{userId} AND `booking_title` = #{oldTitle}
+	</update>
+
+	<delete id="deleteBooking" parameterType="long">
+		DELETE
+		FROM `nucleic_acid_booking`
+		WHERE `booking_id` = #{id}
+	</delete>
+
+	<delete id="deleteBookingInfoByUserIdAndTitle">
+		DELETE
+		FROM `nucleic_acid_booking`
+		WHERE `user_id` = #{userId}
+		  AND `booking_title` = #{title}
+	</delete>
+
+</mapper>

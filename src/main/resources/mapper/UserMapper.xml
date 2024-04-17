@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.UserMapper">
+
+	<resultMap id="userMap" type="userPO">
+		<id column="user_id" property="id" javaType="long" jdbcType="BIGINT"/>
+		<result column="user_open_id" property="openId" javaType="string"/>
+		<result column="user_nick_name" property="nickName" javaType="string"/>
+		<result column="user_name" property="name" javaType="string"/>
+		<result column="user_school" property="school" javaType="string"/>
+		<result column="user_institute" property="institute" javaType="string"/>
+		<result column="user_major" property="major" javaType="string"/>
+		<result column="user_grade" property="grade" javaType="string"/>
+		<result column="user_gender" property="gender" javaType="string"/>
+		<result column="user_avatar_url" property="avatarUrl"
+				javaType="String"/>
+	</resultMap>
+
+	<select id="queryUserByOpenId" resultMap="userMap" parameterType="string">
+		SELECT *
+		FROM `user`
+		WHERE `user_open_id` = #{openId}
+	</select>
+
+	<select id="queryUserById" resultMap="userMap" parameterType="long">
+		SELECT *
+		FROM `user`
+		WHERE `user_id` = #{id}
+	</select>
+
+	<select id="queryUserId" resultType="int" parameterType="string">
+		SELECT `user_id`
+		FROM `user`
+		WHERE `user_open_id` = #{openId}
+	</select>
+
+	<select id="queryUserOpenId" resultType="java.lang.String">
+		SELECT `user_open_id`
+		FROM `user`
+		WHERE `user_id` = #{userId}
+	</select>
+
+	<insert id="insertUser" parameterType="userPO"
+			useGeneratedKeys="true" keyProperty="id" keyColumn="user_id">
+		INSERT INTO `user`(`user_open_id`, `user_nick_name`, `user_name`,
+						   `user_school`, `user_institute`, `user_major`,
+						   `user_grade`, `user_gender`, `user_avatar_url`)
+		VALUES (#{openId}, #{nickName}, IFNULL(#{name}, 'UNKNOWN'),
+				IFNULL(#{school}, '未选定'), IFNULL(#{institute}, '未选定'),
+				IFNULL(#{major}, '未选定'), IFNULL(#{grade}, '未选定'),
+				IFNULL(#{gender}, '不清楚'), IFNULL(#{avatarUrl}, '未选定'))
+	</insert>
+
+	<update id="updateUser" parameterType="userPO" useGeneratedKeys="true"
+			keyProperty="id" keyColumn="user_id">
+		UPDATE `user`
+		<set>
+			<if test="nickName != null">`user_nick_name` = #{nickName},</if>
+			<if test="name != null">`user_name` = #{name},</if>
+			<if test="school != null">`user_school` = #{school},</if>
+			<if test="institute != null">`user_institute` = #{institute},</if>
+			<if test="major != null">`user_major` = #{major},</if>
+			<if test="grade != null">`user_grade` = #{grade},</if>
+			<if test="gender != null">`user_gender` = #{gender},</if>
+			<if test="avatarUrl != null">`user_avatar_url` = #{avatarUrl}</if>
+		</set>
+		WHERE `user_open_id` = #{openId}
+	</update>
+
+	<delete id="deleteUser" parameterType="string">
+		DELETE
+		FROM `user`
+		WHERE `user_open_id` = #{openId}
+	</delete>
+
+	<delete id="deleteUserById" parameterType="long">
+		DELETE
+		FROM `user`
+		WHERE `user_id` = #{id}
+	</delete>
+</mapper>

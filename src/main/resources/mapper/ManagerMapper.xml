@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.manager.ManagerMapper">
+	<resultMap id="managerMap" type="managerPO">
+		<id column="manager_id" property="id" javaType="long"/>
+		<result column="manager_name" property="name" javaType="string"/>
+		<result column="manager_nick_name" property="nickName"
+				javaType="string"/>
+		<result column="manager_role" property="role" javaType="string"/>
+		<result column="manager_password" property="password"
+				javaType="string"/>
+		<result column="manager_post" property="post" javaType="string"/>
+		<result column="manager_school" property="school" javaType="string"/>
+		<result column="manager_institute" property="institute"
+				javaType="string"/>
+		<result column="manager_major" property="major" javaType="string"/>
+		<result column="manager_grade" property="grade" javaType="string"/>
+		<result column="manager_avatar_url" property="avatarUrl"
+				javaType="string"/>
+		<result column="manager_open_id" property="openId" javaType="string"/>
+		<result column="manager_gender" property="gender" javaType="string"/>
+	</resultMap>
+
+	<resultMap id="managerAndStudentMap" type="managerAndStudentPO">
+		<id column="manager_id" property="managerId" javaType="long"/>
+		<result column="manager_school" property="school" javaType="string"/>
+		<result column="manager_institute" property="institute"
+				javaType="string"/>
+		<result column="manager_major" property="major" javaType="string"/>
+		<result column="manager_grade" property="grade" javaType="string"/>
+		<collection property="studentList" ofType="student">
+			<id column="user_id" property="userId" javaType="long"/>
+			<result column="user_name" property="name" javaType="string"/>
+			<result column="user_school" property="school" javaType="string"/>
+			<result column="user_institute" property="institute"
+					javaType="string"/>
+			<result column="user_major" property="major" javaType="string"/>
+			<result column="user_grade" property="grade" javaType="string"/>
+		</collection>
+	</resultMap>
+
+	<!-- 这里不应该获得密码 -->
+	<select id="queryManagerById" resultMap="managerMap" parameterType="long">
+		SELECT `manager_id`,
+			   `manager_name`,
+			   `manager_nick_name`,
+			   `manager_role`,
+			   `manager_post`,
+			   `manager_school`,
+			   `manager_institute`,
+			   `manager_major`,
+			   `manager_grade`,
+			   `manager_avatar_url`,
+			   `manager_open_id`,
+			   `manager_gender`
+		FROM `manager`
+		WHERE `manager_id` = #{id};
+	</select>
+
+	<select id="queryAllManager" resultMap="managerMap">
+		SELECT `manager_id`,
+			   `manager_name`,
+			   `manager_nick_name`,
+			   `manager_role`,
+			   `manager_post`,
+			   `manager_school`,
+			   `manager_institute`,
+			   `manager_major`,
+			   `manager_grade`,
+			   `manager_avatar_url`,
+			   `manager_open_id`,
+			   `manager_gender`
+		FROM `manager`
+	</select>
+
+	<select id="queryManagerAndStudent" resultMap="managerAndStudentMap"
+			parameterType="long">
+		SELECT m.`manager_id`,
+			   m.`manager_school`,
+			   m.`manager_institute`,
+			   m.`manager_major`,
+			   m.`manager_grade`,
+			   u.`user_id`,
+			   u.`user_name`,
+			   u.`user_school`,
+			   u.`user_institute`,
+			   u.`user_major`,
+			   u.`user_grade`
+		FROM `manager` m
+				 LEFT JOIN `user` u
+						   ON m.`manager_school` = u.`user_school` AND
+							  m.`manager_institute` = u.`user_institute`
+							   AND m.`manager_major` = u.`user_major` AND
+							  m.`manager_grade` = u.`user_grade`
+		WHERE m.`manager_id` = #{managerId}
+	</select>
+
+	<select id="queryManagerByNickName" resultMap="managerMap">
+		SELECT *
+		FROM `manager`
+		WHERE `manager_nick_name` = #{nickName}
+	</select>
+
+	<select id="queryManagerByOpenId" resultMap="managerMap">
+		SELECT *
+		FROM `manager`
+		WHERE `manager_open_id` = #{openId}
+	</select>
+
+	<select id="queryManagerByKey" resultType="string">
+		SELECT `manager_nick_name`
+		FROM `manager`
+		WHERE `manager_school` = #{school}
+		  AND `manager_institute` = #{institute}
+		  AND `manager_major` = #{major}
+		  AND `manager_grade` = #{grade}
+	</select>
+
+	<select id="queryManagerByInfo" resultMap="managerMap">
+		SELECT *
+		FROM `manager`
+		WHERE `manager_school` = #{school}
+		  AND `manager_institute` = #{institute}
+		  AND `manager_major` = #{major}
+		  AND `manager_grade` = #{grade}
+	</select>
+
+	<insert id="insertManager" parameterType="managerPO" useGeneratedKeys="true"
+			keyColumn="manager_id" keyProperty="id">
+		INSERT INTO `manager`(`manager_name`, `manager_nick_name`,
+							  `manager_password`, `manager_role`,
+							  `manager_post`, `manager_school`,
+							  `manager_institute`, `manager_major`,
+							  `manager_grade`, `manager_avatar_url`,
+							  `manager_open_id`, `manager_gender`)
+		VALUES (IFNULL(#{name}, '未指定'), IFNULL(#{nickName}, '未指定'),
+				IFNULL(#{password}, '123456'), IFNULL(#{role}, '普通管理员'),
+				IFNULL(#{post}, '辅导员'), IFNULL(#{school}, '未指定'),
+				IFNULL(#{institute}, '未指定'), IFNULL(#{major}, '未指定'),
+				IFNULL(#{grade}, '未指定'), IFNULL(#{avatarUrl}, '未指定'),
+				IFNULL(#{openId}, '未指定'), IFNULL(#{gender}, '不清楚'))
+	</insert>
+
+	<update id="updateManager" parameterType="managerPO">
+		UPDATE `manager`
+		<set>
+			<if test="name != null">`manager_name` = #{name},</if>
+			<if test="nickName != null">`manager_nick_name` = #{nickName},</if>
+			<if test="password != null">`manager_password` = #{password},</if>
+			<if test="role != null">`manager_role` = #{role},</if>
+			<if test="post != null">`manager_post` = #{post},</if>
+			<if test="school != null">`manager_school` = #{school},</if>
+			<if test="institute != null">`manager_institute` = #{institute},
+			</if>
+			<if test="major != null">`manager_major` = #{major},</if>
+			<if test="grade != null">`manager_grade` = #{grade},</if>
+			<if test="avatarUrl != null">`manager_avatar_url` = #{avatarUrl},
+			</if>
+			<if test="openId != null">`manager_open_id` = #{openId},</if>
+			<if test="gender != null">`manager_gender` = #{gender}</if>
+		</set>
+		WHERE `manager_id` = #{id}
+	</update>
+
+	<update id="updateManagerPassword">
+		UPDATE `manager`
+		<set>
+			<if test="password != null"> `manager_password` = #{password}</if>
+		</set>
+		WHERE `manager_id` = #{id}
+	</update>
+
+	<delete id="deleteManager" parameterType="long">
+		DELETE
+		FROM `manager`
+		WHERE `manager_id` = #{id}
+	</delete>
+
+	<delete id="deleteManagerByOpenId" parameterType="string">
+		DELETE
+		FROM `manager`
+		WHERE `manager_open_id` = #{openId}
+	</delete>
+
+</mapper>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.manager.ManagerNucleicAcidInfoMapper">
+
+	<resultMap id="infoMap" type="managerInfoPo">
+		<id column="info_id" property="id" javaType="long"/>
+		<result column="manager_id" property="managerId" javaType="long"/>
+		<result column="info_finish_status" property="finishStatus"
+				javaType="string"/>
+		<result column="info_title" property="title" javaType="string"/>
+		<result column="info_deadline" property="deadLine"
+				javaType="java.util.Date"/>
+	</resultMap>
+
+	<resultMap id="reportingMap" type="managerAndStudentInfoPO">
+		<id column="info_id" property="infoId" javaType="long"/>
+		<result column="manager_id" property="managerId" javaType="long"/>
+		<collection property="studentList" ofType="studentReportingInfo">
+			<id column="user_id" property="userId" javaType="long"/>
+			<result column="user_name" property="name" javaType="string"/>
+			<result column="testing_true_time" property="testingTrueTime"
+					javaType="java.util.Date"/>
+			<result column="info_status" property="finishStatus"
+					javaType="string"/>
+			<result column="info_image_name" property="imageName"
+					javaType="string"/>
+			<result column="info_comment" property="comment" javaType="string"/>
+		</collection>
+	</resultMap>
+
+	<select id="queryInfoById" parameterType="long" resultMap="infoMap">
+		SELECT *
+		FROM `manager_nucleic_acid_info`
+		WHERE `info_id` = #{id}
+	</select>
+
+	<select id="queryManagerInfoList" parameterType="long"
+			resultMap="infoMap">
+		SELECT *
+		FROM `manager_nucleic_acid_info`
+		WHERE `manager_id` = #{managerId}
+	</select>
+
+	<select id="queryStudentReportingInfo" resultMap="reportingMap">
+		SELECT m.`info_id`,
+			   m.`manager_id`,
+			   u.`user_id`,
+			   u.`user_name`,
+			   t.`testing_true_time`,
+			   i.`info_status`,
+			   i.`info_image_name`,
+		       i.`info_comment`
+		FROM `manager_nucleic_acid_info` m
+				 LEFT JOIN `nucleic_acid_info` i
+						   ON i.`manager_id` = m.`manager_id` AND
+							  i.`info_title` = m.`info_title` AND
+						      i.`info_status` = "已完成"
+				 INNER JOIN `user` u ON i.`user_id` = u.`user_id`
+				 LEFT JOIN `nucleic_acid_testing` t
+						   ON i.`user_id` = t.`user_id` AND
+							  i.`info_title` = t.`testing_title`
+		WHERE m.`manager_id` = #{managerId}
+		  AND m.`info_id` = #{infoId}
+	</select>
+
+	<select id="queryInfoByManagerIdAndTitle" resultMap="infoMap">
+		SELECT *
+		FROM `manager_nucleic_acid_info`
+		WHERE `manager_id` = #{managerId}
+		  AND `info_title` = #{title}
+	</select>
+
+	<insert id="insertInfo" parameterType="managerInfoPo"
+			useGeneratedKeys="true" keyColumn="info_id" keyProperty="id">
+		INSERT INTO `manager_nucleic_acid_info`(`manager_id`,
+												`info_finish_status`,
+												`info_title`,
+												`info_deadline`)
+		VALUES (IFNULL(#{managerId}, 0), IFNULL(#{finishStatus}, '进行中'),
+				IFNULL(#{title}, '未指定'),
+				IFNULL(#{deadLine}, NOW()))
+	</insert>
+
+	<update id="updateInfo" parameterType="managerInfoPo">
+		UPDATE `manager_nucleic_acid_info`
+		<set>
+			<if test="managerId != null">`manager_id` = #{managerId},</if>
+			<if test="finishStatus != null">`info_finish_status` =
+				#{finishStatus},
+			</if>
+			<if test="title != null">`info_title` = #{title},</if>
+			<if test="deadLine != null">`info_deadline` = #{deadLine}</if>
+		</set>
+		WHERE `info_id` = #{id}
+	</update>
+
+	<update id="updateInfoFinish">
+		UPDATE `manager_nucleic_acid_info`
+		<set>
+			<if test="finishStatus != null">`info_finish_status` =
+				#{finishStatus,typeHandler=com.weixin.njuteam.config.ValueEnumTypeHandler}
+			</if>
+		</set>
+		WHERE `info_id` = #{infoId}
+	</update>
+
+	<delete id="deleteInfoById" parameterType="long">
+		DELETE
+		FROM `manager_nucleic_acid_info`
+		WHERE `info_id` = #{id}
+	</delete>
+
+	<delete id="deleteAllInfo" parameterType="long">
+		DELETE
+		FROM `manager_nucleic_acid_info`
+		WHERE `manager_id` = #{managerId}
+	</delete>
+
+</mapper>

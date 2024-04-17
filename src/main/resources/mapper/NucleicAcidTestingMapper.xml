@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.nucleic.NucleicAcidTestingMapper">
+
+	<resultMap id="testingMap" type="nucleicAcidTestingPO">
+		<id column="testing_id" property="id" javaType="long"/>
+		<result column="user_id" property="userId" javaType="long"/>
+		<result column="manager_id" property="managerId" javaType="long"/>
+		<result column="testing_require" property="require" javaType="string"/>
+		<result column="testing_title" property="title" javaType="string"/>
+		<result column="testing_start_time" property="startTime"
+				javaType="java.util.Date"/>
+		<result column="testing_end_time" property="endTime"
+				javaType="java.util.Date"/>
+		<result column="testing_is_open_remind" property="isOpenRemind"
+				javaType="boolean"/>
+		<result column="testing_place" property="place" javaType="string"/>
+		<result column="testing_finish_status" property="finishStatus"
+				javaType="string"/>
+	</resultMap>
+
+	<select id="queryTestingById" resultMap="testingMap" parameterType="long">
+		SELECT `testing_id`,
+			   `user_id`,
+			   `testing_require`,
+			   `testing_title`,
+			   `testing_start_time`,
+			   `testing_end_time`,
+			   `testing_place`,
+			   `testing_is_open_remind`,
+			   `testing_finish_status`
+		FROM `nucleic_acid_testing`
+		WHERE `testing_id` = #{id}
+	</select>
+
+	<select id="queryTestingByUserId" resultMap="testingMap"
+			parameterType="long">
+		SELECT `testing_id`,
+			   `user_id`,
+			   `testing_require`,
+			   `testing_title`,
+			   `testing_start_time`,
+			   `testing_end_time`,
+			   `testing_place`,
+			   `testing_is_open_remind`,
+			   `testing_finish_status`
+		FROM `nucleic_acid_testing`
+		WHERE `user_id` = #{userId}
+	</select>
+
+	<select id="queryTestingCount" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM `nucleic_acid_testing`
+		WHERE `user_id` = #{userId}
+		  AND `testing_finish_status` =
+			  #{finishStatus,typeHandler=com.weixin.njuteam.config.ValueEnumTypeHandler}
+	</select>
+
+	<select id="queryTestingByUserIdAndTitle" resultMap="testingMap">
+		SELECT *
+		FROM `nucleic_acid_testing`
+		WHERE `user_id` = #{userId}
+		  AND `testing_title` = #{oldTitle}
+	</select>
+
+	<insert id="insertTesting" parameterType="nucleicAcidTestingPO"
+			useGeneratedKeys="true" keyColumn="testing_id" keyProperty="id">
+		INSERT INTO `nucleic_acid_testing`(`user_id`, `manager_id`,
+										   `testing_require`, `testing_title`,
+										   `testing_start_time`,
+										   `testing_end_time`,
+										   `testing_true_time`,
+										   `testing_is_open_remind`,
+										   `testing_place`,
+										   `testing_finish_status`)
+		VALUES (#{userId}, IFNULL(#{managerId}, 0), IFNULL(#{require}, '未指定'),
+				IFNULL(#{title}, '未指定'),
+				IFNULL(#{startTime}, NOW()),
+				IFNULL(#{endTime}, NOW()), #{trueTime},
+				IFNULL(#{isOpenRemind}, FALSE), IFNULL(#{place}, '未指定'),
+				IFNULL(#{finishStatus}, '进行中'))
+	</insert>
+
+	<update id="updateTesting" parameterType="nucleicAcidTestingPO">
+		UPDATE `nucleic_acid_testing`
+		<set>
+			<if test="userId != null">`user_id` = #{userId},</if>
+			<if test="managerId != null">`manager_id` = #{managerId},</if>
+			<if test="require != null">`testing_require` = #{require},</if>
+			<if test="title != null">`testing_title` = #{title},</if>
+			<if test="startTime != null">`testing_start_time` = #{startTime},
+			</if>
+			<if test="endTime != null">`testing_end_time` = #{endTime},</if>
+			<if test="trueTime != null">`testing_true_time` = #{trueTime}</if>
+			<if test="isOpenRemind != null">`testing_is_open_remind` =
+				#{isOpenRemind},
+			</if>
+			<if test="place != null">`testing_place` = #{place},</if>
+			<if test="finishStatus != null">`testing_finish_status` =
+				#{finishStatus}
+			</if>
+		</set>
+		WHERE `testing_id` = #{id}
+	</update>
+
+	<update id="updateFinish">
+		UPDATE `nucleic_acid_testing`
+		<set>
+			<if test="finishStatus != null">`testing_finish_status` =
+				#{finishStatus,typeHandler=com.weixin.njuteam.config.ValueEnumTypeHandler}
+			</if>
+		</set>
+		WHERE `testing_id` = #{testingId}
+	</update>
+
+	<update id="updateTrueTime">
+		UPDATE `nucleic_acid_testing`
+		<set>
+			<if test="trueTime != null">`testing_true_time` = #{trueTime}</if>
+		</set>
+		WHERE `testing_id` = #{testingId}
+	</update>
+
+	<update id="openRemind">
+		UPDATE `nucleic_acid_testing`
+		<set>
+			<if test="isOpenRemind != null">`testing_is_open_remind` =
+				#{isOpenRemind}
+			</if>
+		</set>
+		WHERE `testing_id` = #{testingId}
+	</update>
+
+	<update id="updateTestingByUserIdAndTitle">
+		UPDATE `nucleic_acid_testing`
+		<set>
+			<if test="userId != null">`user_id` = #{userId},</if>
+			<if test="managerId != null">`manager_id` = #{managerId},</if>
+			<if test="require != null">`testing_require` = #{require},</if>
+			<if test="title != null">`testing_title` = #{title},</if>
+			<if test="startTime != null">`testing_start_time` = #{startTime},
+			</if>
+			<if test="endTime != null">`testing_end_time` = #{endTime},</if>
+			<if test="trueTime != null">`testing_true_time` = #{trueTime}</if>
+			<if test="isOpenRemind != null">`testing_is_open_remind` =
+				#{isOpenRemind},
+			</if>
+			<if test="place != null">`testing_place` = #{place},</if>
+			<if test="finishStatus != null">`testing_finish_status` =
+				#{finishStatus}
+			</if>
+		</set>
+		WHERE `user_id` = #{userId} AND `testing_title` = #{oldTitle}
+	</update>
+
+	<delete id="deleteTesting" parameterType="long">
+		DELETE
+		FROM `nucleic_acid_testing`
+		WHERE `testing_id` = #{id}
+	</delete>
+
+	<delete id="deleteTestingInfoByUserIdAndTitle">
+		DELETE
+		FROM `nucleic_acid_testing`
+		WHERE `user_id` = #{userId}
+		  AND `testing_title` = #{title}
+	</delete>
+
+</mapper>

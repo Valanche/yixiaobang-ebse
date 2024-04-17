@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weixin.njuteam.dao.nucleic.NucleicAcidMapper">
+
+	<resultMap id="acidMap" type="nucleicAcidPO">
+		<id column="title" property="title" javaType="string"/>
+		<result column="testing_time" property="testingTime"
+				javaType="java.util.Date"/>
+		<result column="testing_finish_status" property="testingFinishStatus"
+				javaType="string" jdbcType="VARCHAR"/>
+		<result column="booking_finish_status" property="bookingFinishStatus"
+				javaType="string" jdbcType="VARCHAR"/>
+		<result column="reporting_finish_status"
+				property="reportingFinishStatus" javaType="string"
+				jdbcType="VARCHAR"/>
+	</resultMap>
+
+	<select id="queryUserNucleicAcid" parameterType="long" resultMap="acidMap">
+		SELECT t.`testing_title`            AS title,
+			   IFNULL(t.`testing_true_time`,
+					  t.`testing_end_time`) AS testing_time,
+			   t.`testing_finish_status`    AS testing_finish_status,
+			   b.`booking_finish_status`    AS booking_finish_status,
+			   i.`info_status`              AS reporting_finish_status
+		FROM `user` u
+				 INNER JOIN `nucleic_acid_testing` t
+							ON u.`user_id` = t.`user_id`
+				 INNER JOIN `nucleic_acid_booking` b
+							ON u.`user_id` = b.`user_id` AND b.`booking_title` = t.`testing_title`
+				 LEFT JOIN `nucleic_acid_info` i ON u.`user_id` = i.`user_id` AND t.`testing_title` = i.`info_title`
+		WHERE u.`user_id` = #{userId};
+	</select>
+</mapper>

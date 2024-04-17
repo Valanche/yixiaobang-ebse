@@ -26,10 +26,10 @@ import java.util.Objects;
 @Slf4j
 public class TencentCOS {
 
-	private static final String BUCKET_NAME = "wechat-mini-z-1315540018";
-	private static final String PREFIX = "https://wechat-mini-z-1315540018.cos.ap-nanjing.myqcloud.com/";
-	private static final String SECRET_ID = "AKIDIVVHpDMM8j5D6l01qQt76qT0VvHYyCCw";
-	private static final String SECRET_KEY = "jEVXLxLURDnSzIRNEvPgjYAbu40iEZhb";
+	private static final String BUCKET_NAME = "3";
+	private static final String PREFIX = "2";
+	private static final String SECRET_ID = "1";
+	private static final String SECRET_KEY = "4";
 	private static final COSCredentials CREDENTIALS = new BasicCOSCredentials(SECRET_ID, SECRET_KEY);
 	private static final ClientConfig CLIENT_CONFIG = new ClientConfig(new Region("ap-nanjing"));
 

@@ -172,7 +172,7 @@
 		<dependency>
 			<groupId>com.baidu.aip</groupId>
 			<artifactId>java-sdk</artifactId>
-			<version>4.16.12</version>
+			<version>4.16.18</version>
 		</dependency>
 
 		<!-- redis 需要的依赖 -->
